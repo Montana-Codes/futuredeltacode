@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#161a12">
+  <meta name="description" content="FutureDeltaCode: a free AI directory, local-AI field guide, and live radio.">
+  <title>FutureDeltaCode | Free AI Platform</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d100a;
+      --panel: #161b11;
+      --panel-2: #1d2417;
+      --line: #2f3a24;
+      --od: #5b6b3a;
+      --od-bright: #8a9f4e;
+      --green: #9dff5c;
+      --tan: #c9b98a;
+      --text: #dfe5cf;
+      --muted: #8e9a78;
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --radio-h: 76px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      background:
+        repeating-linear-gradient(0deg, rgb(157 255 92 / 3%) 0 1px, transparent 1px 3px),
+        radial-gradient(900px 400px at 85% -10%, rgb(91 107 58 / 35%), transparent 70%),
+        var(--bg);
+      color: var(--text);
+      font: 15px/1.5 var(--sans);
+    }
+
+    a { color: var(--green); text-underline-offset: 3px; }
+    button, input, select { font: inherit; }
+    :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+    ::selection { background: var(--od); color: #fff; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px clamp(14px, 3vw, 32px);
+      border-bottom: 1px solid var(--line);
+      background: rgb(13 16 10 / 92%);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      clip-path: polygon(50% 0, 100% 22%, 100% 70%, 50% 100%, 0 70%, 0 22%);
+      background: var(--od-bright);
+      color: #0d100a;
+      font: 800 14px var(--mono);
+    }
+
+    .brand h1 { margin: 0; font: 800 18px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .brand h1 span { color: var(--green); }
+    .brand small { display: block; margin-top: 4px; color: var(--muted); font: 11px var(--mono); letter-spacing: .18em; text-transform: uppercase; }
+
+    .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font: 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: blink 2s infinite; }
+    @keyframes blink { 50% { opacity: .35; } }
+
+    nav {
+      display: flex;
+      gap: 4px;
+      padding: 0 clamp(14px, 3vw, 32px);
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+      scrollbar-width: none;
+    }
+
+    nav button {
+      flex: none;
+      padding: 14px 18px;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font: 700 12px var(--mono);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      transition: color .2s, background .2s;
+    }
+
+    nav button:hover { background: var(--panel-2); color: var(--text); }
+    nav button[aria-selected="true"] { border-bottom-color: var(--green); color: var(--green); }
+
+    /* Each page lives in its own independent scroll platform */
+    main { position: relative; min-height: 0; }
+
+    .page {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: clamp(16px, 3vw, 32px);
+      scroll-behavior: smooth;
+    }
+
+    .page[hidden] { display: none; }
+    .page > .wrap { width: min(1100px, 100%); margin-inline: auto; }
+
+    * { scrollbar-width: thin; scrollbar-color: var(--od) var(--bg); }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { border: 2px solid var(--bg); border-radius: 6px; background: var(--od); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--od-bright); }
+
+    .eyebrow { margin: 0 0 8px; color: var(--od-bright); font: 700 11px var(--mono); letter-spacing: .24em; text-transform: uppercase; }
+    h2 { margin: 0 0 8px; font: 800 clamp(26px, 4vw, 40px)/1.1 var(--mono); letter-spacing: -.01em; text-transform: uppercase; }
+    h3 { margin: 0 0 6px; font-size: 17px; }
+    .lead { max-width: 680px; margin: 0 0 22px; color: var(--muted); }
+
+    .panel { border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
+
+    .searchbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin-bottom: 14px; }
+
+    .console {
+      display: flex;
+      flex-direction: column;
+      height: min(68vh, 640px);
+      min-height: 320px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--od-bright);
+      border-radius: 4px;
+      background: #090c07;
+      box-shadow: 0 24px 60px -30px #000, inset 0 0 0 1px rgb(157 255 92 / 4%);
+    }
+
+    .console-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 18px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .console-bar label { display: flex; align-items: center; gap: 8px; color: var(--muted); font: 700 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+
+    .console-bar select, .console-bar input {
+      min-width: 0;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--bg);
+      color: var(--text);
+      font: 13px var(--mono);
+    }
+
+    .console-bar input { width: 170px; }
+    .console-url { margin-left: auto; color: var(--od-bright); font: 12px var(--mono); overflow-wrap: anywhere; }
+
+    .console-out { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px; font: 13.5px/1.6 var(--mono); }
+    .ln { margin: 0 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .ln.me { color: var(--green); }
+    .ln.ai { color: var(--text); padding-left: 12px; border-left: 2px solid var(--od); }
+    .ln.sys { color: var(--muted); }
+    .ln.err { color: #ff8f7a; }
+    .ln img.gen { display: block; max-width: min(100%, 512px); border: 1px solid var(--od); }
+
+    .console-in { display: flex; align-items: stretch; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--panel); }
+    .console-in .prompt { align-self: center; color: var(--green); font: 800 16px var(--mono); }
+
+    .console-in textarea {
+      flex: 1;
+      min-width: 0;
+      resize: none;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--bg);
+      color: var(--text);
+      font: 13.5px/1.5 var(--mono);
+    }
+
+    .console-in textarea:focus, .console-bar select:focus, .console-bar input:focus { border-color: var(--green); outline: none; }
+
+    .console-in .run {
+      padding: 0 22px;
+      border: 1px solid var(--green);
+      border-radius: 3px;
+      background: var(--od);
+      color: #0d100a;
+      cursor: pointer;
+      font: 800 12px var(--mono);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      transition: background .2s;
+    }
+
+    .console-in .run:hover { background: var(--green); }
+
+    @media (max-width: 600px) {
+      .console { height: 72vh; }
+      .console-url { margin-left: 0; }
+      .console-bar input { width: 120px; }
+    }
+
+    .searchbar input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--od);
+      background: #0a0d07;
+      color: var(--green);
+      font: 15px var(--mono);
+    }
+
+    .searchbar input::placeholder { color: #5d6a47; }
+    .searchbar span { align-self: center; color: var(--muted); font: 12px var(--mono); }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+
+    .chip {
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      cursor: pointer;
+      font: 700 11px var(--mono);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .chip:hover { border-color: var(--od-bright); color: var(--text); }
+    .chip[aria-pressed="true"] { border-color: var(--green); background: var(--od); color: #0d100a; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--od);
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+
+    .card:hover { transform: translateY(-2px); border-left-color: var(--green); box-shadow: 0 12px 30px -14px #000; }
+    .card p { margin: 0; color: var(--muted); font-size: 13.5px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { padding: 2px 7px; border: 1px solid var(--line); color: var(--tan); font: 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .card .actions { display: flex; gap: 14px; margin-top: auto; padding-top: 6px; font: 700 12px var(--mono); }
+
+    .empty { padding: 30px; color: var(--muted); font-family: var(--mono); text-align: center; }
+    .empty[hidden] { display: none; }
+
+    .notice { margin: 22px 0; padding: 14px 16px; border: 1px solid #5c4a1c; background: #1f1a0c; color: #e8d9a8; font-size: 13px; }
+
+    .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+
+    .steps { margin: 0; padding: 18px; list-style: none; counter-reset: s; }
+    .steps li { position: relative; margin-bottom: 16px; padding-left: 38px; counter-increment: s; }
+    .steps li::before { position: absolute; left: 0; top: 0; display: grid; width: 26px; height: 26px; place-items: center; background: var(--od); color: #0d100a; content: counter(s); font: 800 12px var(--mono); }
+
+    pre {
+      margin: 8px 0 0;
+      padding: 12px 14px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: #080a06;
+      color: var(--green);
+      font: 13px/1.6 var(--mono);
+    }
+
+    code { color: var(--green); font-family: var(--mono); }
+
+    .table-scroll { max-height: 340px; overflow: auto; border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+    th { position: sticky; top: 0; background: var(--panel-2); color: var(--od-bright); font: 700 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+
+    .station-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid var(--green);
+      background: transparent;
+      color: var(--green);
+      cursor: pointer;
+      font: 800 12px var(--mono);
+      letter-spacing: .12em;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .btn:hover { background: var(--green); color: #0d100a; }
+
+    .radio {
+      position: relative;
+      display: grid;
+      min-height: var(--radio-h);
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 10px clamp(14px, 3vw, 32px) calc(10px + env(safe-area-inset-bottom));
+      border-top: 2px solid var(--od);
+      background: linear-gradient(180deg, #1a2113, #0f130b);
+      box-shadow: 0 -10px 30px rgb(0 0 0 / 50%);
+    }
+
+    .radio-play {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      place-items: center;
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--green);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .radio-play:hover { background: var(--green); color: #0d100a; }
+
+    .radio-info { min-width: 0; }
+    .radio-info b { display: block; overflow: hidden; font: 800 13px var(--mono); letter-spacing: .08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+    .radio-info span.sub { display: block; overflow: hidden; color: var(--muted); font: 11px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+    .radio-controls { display: flex; align-items: center; gap: 10px; }
+    .radio-controls select { max-width: 200px; padding: 8px; border: 1px solid var(--od); background: #0a0d07; color: var(--text); font: 12px var(--mono); }
+    .radio-controls input[type=range] { width: 96px; accent-color: var(--green); }
+
+    .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; margin-right: 8px; vertical-align: middle; }
+    .eq i { width: 3px; height: 4px; background: var(--green); }
+    .playing .eq i { animation: eq .9s infinite ease-in-out; }
+    .playing .eq i:nth-child(2) { animation-delay: .2s; }
+    .playing .eq i:nth-child(3) { animation-delay: .4s; }
+    @keyframes eq { 50% { height: 12px; } }
+
+    @media (max-width: 720px) {
+      .status { display: none; }
+      .searchbar { grid-template-columns: 1fr; }
+      .radio { grid-template-columns: auto minmax(0, 1fr); }
+      .radio-controls { grid-column: 1 / -1; justify-content: space-between; }
+      .radio-controls select { flex: 1; max-width: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">FΔ</div>
+      <div>
+        <h1>Future<span>Delta</span>Code</h1>
+        <small>Open tools · Free AI · Field radio</small>
+      </div>
+    </div>
+    <div class="status"><i></i> Systems nominal</div>
+  </header>
+
+  <nav role="tablist" aria-label="Main sections">
+    <button role="tab" id="t-ai" aria-selected="true" aria-controls="p-ai">Free AI</button>
+    <button role="tab" id="t-about" aria-selected="false" aria-controls="p-about" tabindex="-1">About</button>
+  </nav>
+
+  <main>
+    <section class="page" id="p-ai" role="tabpanel" aria-labelledby="t-ai" tabindex="0">
+      <div class="wrap">
+        <p class="eyebrow">Command box</p>
+        <h2>Free AI terminal</h2>
+        <p class="lead">Pick a free AI tool, type a command, and it runs against that tool's local server.</p>
+
+        <div class="console" id="console">
+          <div class="console-bar">
+            <label>Tool
+              <select id="ai-engine" aria-label="Free AI tool"></select>
+            </label>
+            <label>Model
+              <input id="ai-model" type="text" placeholder="auto" autocomplete="off" spellcheck="false">
+            </label>
+            <span id="ai-url" class="console-url"></span>
+          </div>
+          <div class="console-out" id="ai-out" role="log" aria-live="polite"></div>
+          <form class="console-in" id="ai-form">
+            <span class="prompt">&gt;</span>
+            <textarea id="ai-cmd" rows="2" placeholder="Type a prompt or /help. Enter to run, Shift+Enter for a new line." aria-label="Command" spellcheck="false"></textarea>
+            <button type="submit" class="run">Run</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="p-about" role="tabpanel" aria-labelledby="t-about" tabindex="0" hidden>
+      <div class="wrap">
+        <p class="eyebrow">Briefing</p>
+        <h2>About FutureDeltaCode</h2>
+        <p class="lead">A clean, fast platform for free AI tools and live radio. No accounts, no tracking, no build step.</p>
+        <div class="cols">
+          <div class="card"><h3>Free AI directory</h3><p>Searchable list of free and open-source AI tools with links to the official sites.</p></div>
+          <div class="card"><h3>Private by default</h3><p>This site stores nothing about you. Search and filtering run in your browser.</p></div>
+          <div class="card"><h3>Independent pages</h3><p>Every tab scrolls on its own, and the radio stays docked at the bottom.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="radio" id="radio" aria-label="Radio player">
+    <button class="radio-play" id="radio-play" type="button" aria-label="Play radio">▶</button>
+    <div class="radio-info">
+      <b><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="radio-title">Radio offline</span></b>
+      <span class="sub" id="radio-sub">Select a channel</span>
+    </div>
+    <div class="radio-controls">
+      <select id="radio-select" aria-label="Choose radio channel"></select>
+      <input id="radio-vol" type="range" min="0" max="1" step="0.05" value="0.8" aria-label="Volume">
+    </div>
+    <audio id="radio-audio" preload="none"></audio>
+  </footer>
+
+  <script>
+    const aiTools = [
+      { name: "Ollama", base: "http://localhost:11434/v1", hint: "Start it with: OLLAMA_ORIGINS=* ollama serve  (then: ollama pull llama3.2)" },
+      { name: "LM Studio", base: "http://localhost:1234/v1", hint: "Start the Local Server in LM Studio and enable CORS." },
+      { name: "Jan", base: "http://localhost:1337/v1", hint: "Turn on the Local API Server in Jan settings and enable CORS." },
+      { name: "llama.cpp", base: "http://localhost:8080/v1", hint: "Start it with: llama-server -m model.gguf" },
+      { name: "GPT4All", base: "http://localhost:4891/v1", hint: "Enable the Local API Server in GPT4All settings." },
+      { name: "Stable Diffusion WebUI (image)", base: "http://127.0.0.1:7860", image: true, hint: "Start it with: ./webui.sh --api --cors-allow-origins=*" }
+    ];
+
+    const stations = [
+      { id: "alex", name: "Alex Jones Live (audio)", sub: "Talk · live audio", hls: true, url: "https://stream.alexjoneslive.com/live/indexaudio.m3u8" },
+      { id: "rsc", name: "Radio Swiss Classic", sub: "Classical · Switzerland", url: "https://stream.srg-ssr.ch/m/rsc_de/mp3_128" },
+      { id: "cfm", name: "Classic FM", sub: "Classical · United Kingdom", url: "https://media-ice.musicradio.com/ClassicFMMP3" },
+      { id: "vcr", name: "Venice Classic Radio", sub: "Classical · Italy", url: "https://uk2.streamingpulse.com/ssl/vcr1" },
+      { id: "wqxr", name: "WQXR New York", sub: "Classical · United States", url: "https://stream.wqxr.org/wqxr" }
+    ];
+
+    const $ = (s) => document.querySelector(s);
+    const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    const tabs = [...document.querySelectorAll("nav [role=tab]")];
+    function selectTab(tab) {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      }
+    }
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => selectTab(t));
+      t.addEventListener("keydown", (e) => {
+        const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        const target = tabs[(next + tabs.length) % tabs.length];
+        selectTab(target);
+        target.focus();
+      });
+    });
+
+    const engSel = $("#ai-engine");
+    const out = $("#ai-out");
+    const cmd = $("#ai-cmd");
+    engSel.innerHTML = aiTools.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join("");
+    let history = [];
+    let system = "";
+    const eng = () => aiTools[+engSel.value];
+    const showUrl = () => { $("#ai-url").textContent = eng().base; };
+
+    function line(cls, text) {
+      const d = document.createElement("div");
+      d.className = "ln " + cls;
+      d.textContent = text;
+      out.append(d);
+      out.scrollTop = out.scrollHeight;
+      return d;
+    }
+
+    async function api(path, body) {
+      const r = await fetch(eng().base + path, body ? {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+      } : undefined);
+      if (!r.ok) throw new Error(`HTTP ${r.status} ${await r.text().catch(() => "")}`.slice(0, 300));
+      return r.json();
+    }
+
+    const modelCache = {};
+    async function pickModel() {
+      const typed = $("#ai-model").value.trim();
+      if (typed) return typed;
+      const k = eng().base;
+      if (!modelCache[k]) {
+        const j = await api("/models");
+        modelCache[k] = j.data && j.data[0] && j.data[0].id;
+      }
+      if (!modelCache[k]) throw new Error("No model loaded. Load or pull one in " + eng().name + ".");
+      return modelCache[k];
+    }
+
+    async function streamChat(model, messages, el) {
+      const r = await fetch(eng().base + "/chat/completions", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model, messages, stream: true })
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status} ${await r.text().catch(() => "")}`.slice(0, 300));
+      const reader = r.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "", full = "";
+      el.className = "ln ai";
+      el.textContent = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split("\n");
+        buf = parts.pop();
+        for (const p of parts) {
+          const t = p.trim();
+          if (!t.startsWith("data:")) continue;
+          const d = t.slice(5).trim();
+          if (d === "[DONE]") continue;
+          try {
+            const c = JSON.parse(d).choices[0].delta.content;
+            if (c) { full += c; el.textContent = full; out.scrollTop = out.scrollHeight; }
+          } catch { /* partial chunk */ }
+        }
+      }
+      return full;
+    }
+
+    async function runImage(prompt) {
+      const wait = line("sys", "Generating image…");
+      const j = await api("/sdapi/v1/txt2img", { prompt, steps: 20, width: 512, height: 512 });
+      const img = document.createElement("img");
+      img.className = "gen";
+      img.alt = prompt;
+      img.src = "data:image/png;base64," + j.images[0];
+      wait.className = "ln ai";
+      wait.textContent = "";
+      wait.append(img);
+      out.scrollTop = out.scrollHeight;
+    }
+
+    async function runCommand(text) {
+      line("me", "> " + text);
+      if (text === "/help") {
+        line("sys", "/models   list models on the selected tool\n/system TEXT   set a system prompt\n/clear   reset the conversation\n/help   this list\nChat tools: anything else is sent as a prompt and streamed back.\nImage tool: anything else is the image prompt.");
+        return;
+      }
+      if (text === "/clear") { history = []; out.innerHTML = ""; return; }
+      if (text.startsWith("/system")) { system = text.slice(7).trim(); line("sys", system ? "System prompt set." : "System prompt cleared."); return; }
+      let pushed = false;
+      try {
+        if (eng().image) return await runImage(text);
+        if (text === "/models") {
+          const j = await api("/models");
+          line("ai", (j.data || []).map((m) => m.id).join("\n") || "No models found.");
+          return;
+        }
+        const model = await pickModel();
+        history.push({ role: "user", content: text });
+        pushed = true;
+        const el = line("sys", "…");
+        const messages = system ? [{ role: "system", content: system }, ...history] : history;
+        history.push({ role: "assistant", content: await streamChat(model, messages, el) });
+      } catch (e) {
+        if (pushed) history.pop();
+        line("err", e.name === "TypeError"
+          ? `Can't reach ${eng().name} at ${eng().base}. ${eng().hint}`
+          : e.message);
+      }
+    }
+
+    $("#ai-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const t = cmd.value.trim();
+      if (!t) return;
+      cmd.value = "";
+      runCommand(t);
+    });
+    cmd.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#ai-form").requestSubmit(); }
+    });
+    engSel.addEventListener("change", () => { history = []; showUrl(); line("sys", "Switched to " + eng().name + "."); });
+    showUrl();
+    line("sys", "Ready. Type /help for commands.");
+
+    const audio = $("#radio-audio");
+    const radio = $("#radio");
+    const select = $("#radio-select");
+    let current = stations[1];
+
+    for (const s of stations) select.append(new Option(s.name, s.id));
+    select.value = current.id;
+
+    function setNow(playing, message) {
+      radio.classList.toggle("playing", playing);
+      $("#radio-play").textContent = playing ? "❚❚" : "▶";
+      $("#radio-play").setAttribute("aria-label", playing ? "Pause radio" : "Play radio");
+      $("#radio-title").textContent = current.name;
+      $("#radio-sub").textContent = message || current.sub;
+    }
+
+    function chooseStation(id, autoplay) {
+      const s = stations.find((x) => x.id === id);
+      if (!s) return;
+      current = s;
+      select.value = id;
+      audio.dataset.want = autoplay ? "1" : "";
+      attach(s);
+      setNow(false, autoplay ? "Connecting…" : s.sub);
+      if (autoplay && !s.hls) audio.play().catch(() => setNow(false, "Stream blocked or unavailable"));
+    }
+
+    let hls = null;
+    let hlsLoader = null;
+    function loadHlsLib() {
+      hlsLoader = hlsLoader || new Promise((res, rej) => {
+        const sc = document.createElement("script");
+        sc.src = "https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js";
+        sc.onload = res;
+        sc.onerror = rej;
+        document.head.append(sc);
+      });
+      return hlsLoader;
+    }
+
+    function attach(s) {
+      if (hls) { hls.destroy(); hls = null; }
+      if (!s.hls || audio.canPlayType("application/vnd.apple.mpegurl")) {
+        audio.src = s.url;
+        return;
+      }
+      audio.removeAttribute("src");
+      audio.load();
+      loadHlsLib().then(() => {
+        if (current !== s || !window.Hls || !Hls.isSupported()) return setNow(false, "Stream unsupported in this browser");
+        hls = new Hls();
+        hls.loadSource(s.url);
+        hls.attachMedia(audio);
+        hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) setNow(false, "Stream unavailable. Try another channel"); });
+        if (audio.dataset.want) audio.play().catch(() => setNow(false, "Stream blocked or unavailable"));
+      }).catch(() => setNow(false, "Could not load audio player"));
+    }
+
+    $("#radio-play").addEventListener("click", () => {
+      audio.dataset.want = "1";
+      if (!audio.getAttribute("src") && !hls) { attach(current); if (current.hls) return; }
+      if (audio.paused) audio.play().catch(() => setNow(false, "Stream blocked or unavailable"));
+      else audio.pause();
+    });
+    select.addEventListener("change", () => chooseStation(select.value, true));
+    $("#radio-vol").addEventListener("input", (e) => { audio.volume = Number(e.target.value); });
+    audio.volume = 0.8;
+    audio.addEventListener("playing", () => setNow(true, "On air · " + current.sub));
+    audio.addEventListener("pause", () => setNow(false));
+    audio.addEventListener("waiting", () => setNow(false, "Buffering…"));
+    audio.addEventListener("error", () => { if (audio.getAttribute("src")) setNow(false, "Stream unavailable. Try another channel"); });
+    setNow(false);
+  </script>
+</body>
+</html>
