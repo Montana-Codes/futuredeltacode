@@ -21,7 +21,7 @@
       --muted: #8e9a78;
       --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --radio-h: 76px;
+      --radio-h: 46px;
     }
 
     * { box-sizing: border-box; }
@@ -316,7 +316,7 @@
       grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
       gap: 14px;
-      padding: 10px clamp(14px, 3vw, 32px) calc(10px + env(safe-area-inset-bottom));
+      padding: 5px clamp(14px, 3vw, 32px) calc(5px + env(safe-area-inset-bottom));
       border-top: 2px solid var(--od);
       background: linear-gradient(180deg, #1a2113, #0f130b);
       box-shadow: 0 -10px 30px rgb(0 0 0 / 50%);
@@ -324,24 +324,24 @@
 
     .radio-play {
       display: grid;
-      width: 48px;
-      height: 48px;
+      width: 34px;
+      height: 34px;
       place-items: center;
       border: 2px solid var(--green);
       border-radius: 50%;
       background: transparent;
       color: var(--green);
       cursor: pointer;
-      font-size: 18px;
+      font-size: 13px;
     }
 
     .radio-play:hover { background: var(--green); color: #0d100a; }
 
     .radio-info { min-width: 0; }
-    .radio-info b { display: block; overflow: hidden; font: 800 13px var(--mono); letter-spacing: .08em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-    .radio-info span.sub { display: block; overflow: hidden; color: var(--muted); font: 11px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
-    .radio-controls { display: flex; align-items: center; gap: 10px; }
-    .radio-controls select { max-width: 200px; padding: 8px; border: 1px solid var(--od); background: #0a0d07; color: var(--text); font: 12px var(--mono); }
+    .radio-info b { display: block; overflow: hidden; font: 800 12px var(--mono); letter-spacing: .06em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+    .radio-info span.sub { display: block; overflow: hidden; color: var(--muted); font: 10px var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+    .radio-controls { display: flex; align-items: center; gap: 8px; }
+    .radio-controls select { max-width: 170px; padding: 4px 6px; border: 1px solid var(--od); background: #0a0d07; color: var(--text); font: 12px var(--mono); }
     .radio-controls input[type=range] { width: 96px; accent-color: var(--green); }
 
     #p-map { display: grid; grid-template-rows: auto minmax(0, 1fr); padding: 0; overflow: hidden; }
@@ -364,9 +364,8 @@
     @media (max-width: 720px) {
       .status { display: none; }
       .searchbar { grid-template-columns: 1fr; }
-      .radio { grid-template-columns: auto minmax(0, 1fr); }
-      .radio-controls { grid-column: 1 / -1; justify-content: space-between; }
-      .radio-controls select { flex: 1; max-width: none; }
+      .radio-controls select { max-width: 120px; }
+      .radio-controls input[type=range] { width: 64px; }
     }
 
     /* Cross-platform fit: dynamic viewport, notches, touch targets, tiny and huge screens */
@@ -382,7 +381,7 @@
       .console-bar input { width: 140px; }
     }
     @media (max-width: 600px) {
-      :root { --radio-h: 64px; }
+      :root { --radio-h: 44px; }
       body { font-size: 14px; }
       header { padding-block: 8px; }
       .brand-mark { width: 32px; height: 32px; }
@@ -397,15 +396,16 @@
       .console-in textarea { flex: 1 1 calc(100% - 28px); }
       .console-in .run { flex: 1 1 100%; min-height: 44px; }
       .map-bar { font-size: 10px; letter-spacing: .08em; }
-      .radio-play { width: 44px; height: 44px; }
-      .radio-controls input[type=range] { width: 38%; }
+      .radio-controls select { max-width: 96px; }
+      .radio-controls input[type=range] { display: none; }
       .table-scroll { max-height: 260px; }
     }
     /* 16px controls stop iOS from zooming on focus; 44px targets for touch */
     @media (pointer: coarse) {
       input, select, textarea { font-size: 16px !important; }
       .chip, .btn, nav button { min-height: 44px; }
-      .radio-controls select { min-height: 40px; }
+      .radio-controls select { min-height: 34px; }
+      .radio-play { width: 38px; height: 38px; }
     }
     .brand > div { min-width: 0; }
     @media (max-width: 360px) {
