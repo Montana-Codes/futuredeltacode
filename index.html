@@ -369,6 +369,49 @@
       .radio-controls select { flex: 1; max-width: none; }
     }
 
+    /* Cross-platform fit: dynamic viewport, notches, touch targets, tiny and huge screens */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body { height: 100vh; height: 100dvh; padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+    img, video, canvas, iframe { max-width: 100%; }
+    @media (min-width: 1600px) {
+      body { font-size: 16px; }
+      .page > .wrap { width: min(1280px, 100%); }
+    }
+    @media (max-width: 900px) {
+      .grid, .station-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+      .console-bar input { width: 140px; }
+    }
+    @media (max-width: 600px) {
+      :root { --radio-h: 64px; }
+      body { font-size: 14px; }
+      header { padding-block: 8px; }
+      .brand-mark { width: 32px; height: 32px; }
+      .brand h1 { font-size: 15px; letter-spacing: .1em; }
+      .brand small { font-size: 9px; letter-spacing: .1em; }
+      nav button { padding: 12px 14px; font-size: 11px; }
+      .cols, .grid, .station-grid { grid-template-columns: 1fr; }
+      .console-bar { gap: 8px 12px; }
+      .console-bar label { flex: 1 1 100%; }
+      .console-bar select, .console-bar input { flex: 1; width: 100%; }
+      .console-in { flex-wrap: wrap; }
+      .console-in textarea { flex: 1 1 calc(100% - 28px); }
+      .console-in .run { flex: 1 1 100%; min-height: 44px; }
+      .map-bar { font-size: 10px; letter-spacing: .08em; }
+      .radio-play { width: 44px; height: 44px; }
+      .radio-controls input[type=range] { width: 38%; }
+      .table-scroll { max-height: 260px; }
+    }
+    /* 16px controls stop iOS from zooming on focus; 44px targets for touch */
+    @media (pointer: coarse) {
+      input, select, textarea { font-size: 16px !important; }
+      .chip, .btn, nav button { min-height: 44px; }
+      .radio-controls select { min-height: 40px; }
+    }
+    @media (max-height: 480px) and (orientation: landscape) {
+      header { display: none; }
+      .console { height: 80vh; min-height: 220px; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
     }
@@ -467,7 +510,8 @@
     ];
 
     const stations = [
-      { id: "alex", name: "Alex Jones Live (audio)", sub: "Talk · live audio", hls: true, url: "https://stream.alexjoneslive.com/live/indexaudio.m3u8" },
+      { id: "alex", name: "Alex Jones Show (live)", sub: "Talk · official audio stream", url: "https://stream.alexjones.media/alexjonesshow.mp3", alt: ["https://audio.alexjoneslive.com:8443/alexjonesshow.aac"] },
+      { id: "alexhls", name: "Alex Jones Show (backup)", sub: "Talk · HLS audio", hls: true, url: "https://stream.alexjoneslive.com/live/indexaudio.m3u8" },
       { id: "rsc", name: "Radio Swiss Classic", sub: "Classical · Switzerland", url: "https://stream.srg-ssr.ch/m/rsc_de/mp3_128" },
       { id: "cfm", name: "Classic FM", sub: "Classical · United Kingdom", url: "https://media-ice.musicradio.com/ClassicFMMP3" },
       { id: "vcr", name: "Venice Classic Radio", sub: "Classical · Italy", url: "https://uk2.streamingpulse.com/ssl/vcr1" },
@@ -634,7 +678,8 @@
     const audio = $("#radio-audio");
     const radio = $("#radio");
     const select = $("#radio-select");
-    let current = stations[1];
+    let current = stations[0];
+    let altIdx = 0;
 
     for (const s of stations) select.append(new Option(s.name, s.id));
     select.value = current.id;
@@ -651,6 +696,7 @@
       const s = stations.find((x) => x.id === id);
       if (!s) return;
       current = s;
+      altIdx = 0;
       select.value = id;
       audio.dataset.want = autoplay ? "1" : "";
       attach(s);
@@ -701,7 +747,15 @@
     audio.addEventListener("playing", () => setNow(true, "On air · " + current.sub));
     audio.addEventListener("pause", () => setNow(false));
     audio.addEventListener("waiting", () => setNow(false, "Buffering…"));
-    audio.addEventListener("error", () => { if (audio.getAttribute("src")) setNow(false, "Stream unavailable. Try another channel"); });
+    audio.addEventListener("error", () => {
+      if (!audio.getAttribute("src")) return;
+      if (current.alt && altIdx < current.alt.length) {
+        audio.src = current.alt[altIdx++];
+        audio.play().catch(() => {});
+        return;
+      }
+      setNow(false, "Stream unavailable. Try another channel");
+    });
     setNow(false);
   </script>
 </body>
