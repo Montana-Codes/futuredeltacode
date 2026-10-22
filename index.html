@@ -344,15 +344,15 @@
     .radio-controls select { max-width: 200px; padding: 8px; border: 1px solid var(--od); background: #0a0d07; color: var(--text); font: 12px var(--mono); }
     .radio-controls input[type=range] { width: 96px; accent-color: var(--green); }
 
-    #p-map { padding: 0; }
-    .map-shell { position: relative; height: 100%; min-height: 420px; }
-    #tmap { position: absolute; inset: 0; background: #0a0d07; }
-    .map-hud { position: absolute; z-index: 1000; top: 12px; left: 12px; display: grid; gap: 8px; width: min(260px, calc(100% - 24px)); padding: 12px; border: 1px solid var(--od); background: rgb(13 16 10 / 90%); font: 12px var(--mono); }
-    .map-hud b { color: var(--green); letter-spacing: .1em; text-transform: uppercase; }
-    .map-hud label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-    .map-hud select { padding: 6px; border: 1px solid var(--od); background: #0a0d07; color: var(--text); font: 12px var(--mono); }
-    .map-hud .readout { color: var(--muted); }
-    .leaflet-container { font-family: var(--mono); }
+    #p-map { display: grid; grid-template-rows: auto minmax(0, 1fr); padding: 0; overflow: hidden; }
+    #p-map[hidden] { display: none; }
+    .map-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 10px clamp(12px, 3vw, 24px); border-bottom: 1px solid var(--line); background: var(--panel); font: 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .map-bar b { color: var(--green); font-weight: 800; }
+    .map-bar span { color: var(--muted); }
+    .map-bar a { padding: 6px 10px; border: 1px solid var(--od); color: var(--tan); text-decoration: none; }
+    .map-bar a:hover, .map-bar a:focus-visible { border-color: var(--green); color: var(--green); }
+    .map-frame { position: relative; min-height: 0; background: var(--bg); }
+    .map-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg); }
 
     .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; margin-right: 8px; vertical-align: middle; }
     .eq i { width: 3px; height: 4px; background: var(--green); }
@@ -420,19 +420,12 @@
     </section>
 
     <section class="page" id="p-map" role="tabpanel" aria-labelledby="t-map" tabindex="0" hidden>
-      <div class="map-shell">
-        <div id="tmap" aria-label="Tactical map"></div>
-        <div class="map-hud">
-          <b>Tactical map</b>
-          <select id="map-base" aria-label="Base layer">
-            <option value="sat">Satellite imagery</option>
-            <option value="topo">Topographic</option>
-            <option value="dark">Dark ops</option>
-          </select>
-          <label><input type="checkbox" id="lyr-quake" checked> Earthquakes (24h, live)</label>
-          <label><input type="checkbox" id="lyr-iss" checked> ISS orbit position (live)</label>
-          <div class="readout" id="map-readout">Move the cursor over the map.</div>
-        </div>
+      <div class="map-bar">
+        <div><b>Tactical Map</b> <span>// God's Eye View · live globe</span></div>
+        <a href="tactical/" target="_blank" rel="noopener">Open full screen ↗</a>
+      </div>
+      <div class="map-frame">
+        <iframe id="tmap-frame" title="God's Eye View tactical map" data-src="tactical/" allow="fullscreen; geolocation" loading="lazy"></iframe>
       </div>
     </section>
 
@@ -495,66 +488,9 @@
       if (tab.id === "t-map") initTacticalMap();
     }
 
-    let tmap = null;
-    let leafletPromise = null;
-    function loadLeaflet() {
-      leafletPromise ??= new Promise((resolve, reject) => {
-        const css = document.createElement("link");
-        css.rel = "stylesheet";
-        css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        document.head.append(css);
-        const js = document.createElement("script");
-        js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-        js.onload = resolve;
-        js.onerror = () => reject(new Error("Leaflet failed to load"));
-        document.head.append(js);
-      });
-      return leafletPromise;
-    }
-
-    async function initTacticalMap() {
-      if (tmap) { tmap.invalidateSize(); return; }
-      const readout = $("#map-readout");
-      try { await loadLeaflet(); } catch (e) { readout.textContent = e.message; return; }
-      tmap = L.map("tmap", { center: [25, 10], zoom: 3, worldCopyJump: true });
-      const bases = {
-        sat: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 18, attribution: "Imagery © Esri" }),
-        topo: L.tileLayer("https://tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "© OpenTopoMap, © OpenStreetMap" }),
-        dark: L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19, subdomains: "abcd", attribution: "© OpenStreetMap, © CARTO" })
-      };
-      let base = bases.sat.addTo(tmap);
-      $("#map-base").addEventListener("change", (e) => { tmap.removeLayer(base); base = bases[e.target.value].addTo(tmap); });
-
-      const quakes = L.layerGroup().addTo(tmap);
-      const iss = L.layerGroup().addTo(tmap);
-      $("#lyr-quake").addEventListener("change", (e) => e.target.checked ? quakes.addTo(tmap) : tmap.removeLayer(quakes));
-      $("#lyr-iss").addEventListener("change", (e) => e.target.checked ? iss.addTo(tmap) : tmap.removeLayer(iss));
-      tmap.on("mousemove", (e) => { readout.textContent = `LAT ${e.latlng.lat.toFixed(4)}  LON ${e.latlng.wrap().lng.toFixed(4)}`; });
-      L.control.scale({ imperial: false }).addTo(tmap);
-
-      async function loadQuakes() {
-        try {
-          const data = await (await fetch("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson")).json();
-          quakes.clearLayers();
-          for (const f of data.features) {
-            const [lon, lat] = f.geometry.coordinates;
-            const m = f.properties.mag ?? 0;
-            L.circleMarker([lat, lon], { radius: Math.max(3, m * 2.5), color: "#9dff5c", weight: 1, fillColor: "#ff5c3a", fillOpacity: 0.6 })
-              .bindPopup(`<b>M${m}</b><br>${esc(f.properties.place ?? "")}`).addTo(quakes);
-          }
-        } catch { readout.textContent = "Earthquake feed unavailable."; }
-      }
-      async function loadIss() {
-        try {
-          const d = await (await fetch("https://api.wheretheiss.at/v1/satellites/25544")).json();
-          iss.clearLayers();
-          L.circleMarker([d.latitude, d.longitude], { radius: 8, color: "#9dff5c", fillColor: "#9dff5c", fillOpacity: 0.9 })
-            .bindTooltip(`ISS · ${Math.round(d.altitude)} km · ${Math.round(d.velocity)} km/h`, { permanent: true, direction: "right" }).addTo(iss);
-        } catch { /* keep last position */ }
-      }
-      loadQuakes(); loadIss();
-      setInterval(loadQuakes, 300000);
-      setInterval(loadIss, 5000);
+    function initTacticalMap() {
+      const f = $("#tmap-frame");
+      if (!f.src) f.src = f.dataset.src;
     }
     tabs.forEach((t, i) => {
       t.addEventListener("click", () => selectTab(t));
