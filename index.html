@@ -407,6 +407,13 @@
       .chip, .btn, nav button { min-height: 44px; }
       .radio-controls select { min-height: 40px; }
     }
+    .brand > div { min-width: 0; }
+    @media (max-width: 360px) {
+      .brand small { white-space: normal; letter-spacing: .04em; }
+      .brand h1 { font-size: 13px; letter-spacing: .06em; }
+      nav button { padding-inline: 10px; }
+      .radio { gap: 8px; }
+    }
     @media (max-height: 480px) and (orientation: landscape) {
       header { display: none; }
       .console { height: 80vh; min-height: 220px; }
