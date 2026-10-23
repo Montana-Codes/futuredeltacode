@@ -432,6 +432,14 @@
     .radio-controls select { min-height: 0 !important; padding: 1px 4px; font-size: 11px !important; max-width: 130px; }
     .radio-controls input[type=range] { width: 70px; height: 12px; }
     @media (max-width: 600px) { :root { --radio-h: 30px; } .radio-controls select { max-width: 100px; } .radio-info span.sub { display: none; } }
+    /* radio title alignment + select arrow room */
+    .radio { min-height: 34px; }
+    .radio-info { display: flex; flex-direction: column; justify-content: center; align-self: stretch; gap: 1px; }
+    .radio-info b { display: flex; align-items: center; gap: 6px; line-height: 1.2; }
+    .radio-info b #radio-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .eq { flex: none; margin-right: 0; height: 10px; vertical-align: baseline; }
+    .radio-info span.sub { line-height: 1.3; padding-left: 0; }
+    .radio-controls select { appearance: none; -webkit-appearance: none; padding: 2px 22px 2px 6px; text-overflow: ellipsis; background: #0a0d07 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239dff5c' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 6px center; }
 </style>
 </head>
 <body>
