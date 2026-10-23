@@ -422,7 +422,17 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
     }
-  </style>
+      /* ultra-thin radio bar */
+    :root, :root { --radio-h: 30px; }
+    .radio { gap: 8px; padding: 2px clamp(8px, 2vw, 20px) calc(2px + env(safe-area-inset-bottom)); border-top-width: 1px; }
+    .radio-play, .radio-play { width: 22px !important; height: 22px !important; border-width: 1px; font-size: 9px; }
+    .radio-info b { font-size: 10px; line-height: 1.1; }
+    .radio-info span.sub { font-size: 8px; line-height: 1.1; }
+    .radio-controls { gap: 6px; }
+    .radio-controls select { min-height: 0 !important; padding: 1px 4px; font-size: 11px !important; max-width: 130px; }
+    .radio-controls input[type=range] { width: 70px; height: 12px; }
+    @media (max-width: 600px) { :root { --radio-h: 30px; } .radio-controls select { max-width: 100px; } .radio-info span.sub { display: none; } }
+</style>
 </head>
 <body>
   <header>
